@@ -1,0 +1,173 @@
+---
+title: "Eelgrass"
+---
+
+```{r, echo = FALSE, include=FALSE}
+library(sf)
+library(tidyverse)
+library(rjson)
+library(leaflet)
+library(ggplot2)
+library(maps)
+library(terra)
+library(htmlwidgets)
+
+##Mapping polygons
+load("C:/Users/user/Documents/Work/Blue Carbon/.RData")
+
+#Laurence 1
+feature <- st_read("C:/Users/user/Documents/Work/Blue Carbon/Laurence/eelgrass_in_the_coastal_zone_of_maritime_quebec.shp") %>% 
+  st_make_valid() %>% 
+  st_union() %>% 
+  st_concave_hull(ratio = 0.85)
+
+feature <- st_transform(feature, 4326)
+features[[20]] <- feature
+
+popup_content <- polygon_gdb$name
+popup_content[20] <- "eelgrass_in_the_coastal_zone_of_maritime_quebec"
+popup_content[19] <- "Northeast_Ocean"
+
+#Laurence 2
+feature <- st_read("C:/Users/user/Documents/Work/Blue Carbon/Laurence/Zostère_eelgrass/Zostère_eelgrass/Zostera_QC_DFO_MPO_2023.shp") %>% 
+  st_make_valid() %>% 
+  st_union() %>% 
+  st_concave_hull(ratio = 0.85)
+
+feature <- st_transform(feature, 4326)
+features[[21]] <- feature
+
+popup_content[21] <- "Zostera_QC_DFO_MPO_2023"
+
+#Shorezone
+feature <- st_read("C:/Users/user/Documents/Work/Blue Carbon/ShoreZone/shorezone_eelg.shp") %>% 
+  st_make_valid() %>% 
+  st_union() %>% 
+  st_concave_hull(ratio = 0.85)
+
+features[[22]] <- feature
+popup_content[22] <- "Shorezone_eelg"
+
+##Mapping points
+#NETForce
+gdb_path <- "C:/Users/user/Documents/Work/Blue Carbon/NETForce/NETForce_Point_Data.gdb"
+
+point_gdb <- st_layers(gdb_path)
+
+points <- list()
+for(i in 1:length(point_gdb)){
+  feature <- st_read(gdb_path, layer = point_gdb$name[i])
+  coords <- st_coordinates(feature)
+  feature <- mutate(feature, lng = coords[,1],
+                    lat = coords[,2]) %>% 
+    select(lng, lat) %>% 
+    st_union() %>% 
+    st_concave_hull(allow_holes = TRUE, 0.85)
+  points[[i]] <- feature
+}
+
+#CAMP
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/CAMP/camp_species_observations_zoma.shp") %>% 
+  st_union() %>% 
+  st_concave_hull(allow_holes = TRUE, 0.85)
+
+points[[7]] <- point
+
+popup_point <- point_gdb$name
+popup_point[7] <- "CAMP_eelgrass"
+
+#Kira Krumhansl
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/MCT/Camera_Surveys_NovaScotia_NewBrunswick_2022_2023/Camera_Surveys_NovaScotia_NewBrunswick_2022_2023.gdb", layer = "MCT_Camera_Surveys_SubtidalFlora_NovaScotia_NewBrunswick_2022_2023") %>% 
+  st_union() %>% 
+  st_concave_hull(allow_holes = TRUE, 0.85)
+
+points[[8]] <- point
+
+popup_point[8] <- "Marine Conservation Targets 2022-2023"
+
+#Nicole Knight
+gdb_path <- "C:/Users/user/Documents/Work/Blue Carbon/Nicole Knight/doi_10_5061_dryad_37pvmcvpk_v20221101.gdb"
+
+gdb <- st_layers(gdb_path)
+
+for(i in 9:17){
+  feature <- st_read(gdb_path, layer = gdb$name[i-8])
+  coords <- st_coordinates(feature)
+  feature <- mutate(feature, lng = coords[,1],
+                    lat = coords[,2]) %>% 
+    select(lng, lat) %>% 
+    st_union() %>% 
+    st_concave_hull(allow_holes = TRUE, 0.85)
+  points[[i]] <- feature
+}
+
+popup_point[9:17] <- gdb$name
+
+#Melissa Wong
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/Melissa_Wong/eelgrass_occurrence_records_20240118_nokrumhansl.shp") %>% 
+  st_union() %>% 
+  st_concave_hull(allow_holes = TRUE, 0.85)
+
+points[[18]] <- point
+
+popup_point[18] <- "bluec_MelissaWong"
+
+#VIMS
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/VIMS/zm_observations.shp") %>% 
+  st_union() %>% 
+  st_concave_hull(allow_holes = TRUE, 0.85)
+
+points[[19]] <- point
+popup_point[19] <- "VIMS"
+
+#Leaflet
+m <- leaflet() %>% 
+  addTiles() %>% 
+  addPolygons(data = points[[1]], color = "red", opacity = 1, popup = popup_point[1]) %>% 
+  addPolygons(data = points[[2]], color = "blue", opacity = 1, popup = popup_point[2]) %>% 
+  addPolygons(data = points[[3]], color = "purple", opacity = 1, popup = popup_point[3]) %>% 
+  addPolygons(data = points[[4]], color = "green", opacity = 1, popup = popup_point[4]) %>% 
+  addPolygons(data = points[[5]], color = "orange", opacity = 1, popup = popup_point[5]) %>% 
+  addPolygons(data = points[[6]], color = "yellow", opacity = 1, popup = popup_point[6]) %>% 
+  addPolygons(data = points[[7]], color = "aquamarine", opacity = 1, popup = popup_point[7]) %>% 
+  addPolygons(data = points[[8]], color = "#C3423F", opacity = 1, popup = popup_point[8]) %>%
+  addPolygons(data = points[[9]], color = "#F37748", opacity = 1, popup = popup_point[9]) %>% 
+  addPolygons(data = points[[10]], color = "#F37748", opacity = 1, popup = popup_point[10]) %>% 
+  addPolygons(data = points[[11]], color = "#F37748", opacity = 1, popup = popup_point[11]) %>% 
+  addPolygons(data = points[[12]], color = "#F37748", opacity = 1, popup = popup_point[12]) %>% 
+  addPolygons(data = points[[13]], color = "#F37748", opacity = 1, popup = popup_point[13]) %>% 
+  addPolygons(data = points[[14]], color = "#F37748", opacity = 1, popup = popup_point[14]) %>% 
+  addPolygons(data = points[[15]], color = "#F37748", opacity = 1, popup = popup_point[15]) %>% 
+  addPolygons(data = points[[16]], color = "#F37748", opacity = 1, popup = popup_point[16]) %>%
+  addPolygons(data = points[[17]], color = "#F37748", opacity = 1, popup = popup_point[17]) %>% 
+  addPolygons(data = points[[18]], color = "purple", opacity = 1, popup = popup_point[18]) %>%
+  addPolygons(data = points[[19]], color = "red", opacity = 1, popup = popup_point[19]) %>% 
+  addPolygons(data = features[[1]], color = "red", opacity = 1, popup = popup_content[1]) %>% 
+  addPolygons(data = features[[2]], color = "blue", opacity = 1, popup = popup_content[2]) %>% 
+  addPolygons(data = features[[3]], color = "purple", opacity = 1, popup = popup_content[3]) %>% 
+  addPolygons(data = features[[4]], color = "green", opacity = 1, popup = popup_content[4]) %>% 
+  addPolygons(data = features[[5]], color = "orange", opacity = 1, popup = popup_content[5]) %>% 
+  addPolygons(data = features[[6]], color = "yellow", opacity = 1, popup = popup_content[6]) %>% 
+  addPolygons(data = features[[7]], color = "brown", opacity = 1, popup = popup_content[7]) %>%
+  addPolygons(data = features[[8]], color = "red", opacity = 1, popup = popup_content[8]) %>% 
+  addPolygons(data = features[[9]], color = "pink", opacity = 1, popup = popup_content[9]) %>% 
+  addPolygons(data = features[[10]], color = "grey", opacity = 1, popup = popup_content[10]) %>% 
+  addPolygons(data = features[[11]], color = "deeppink", opacity = 1, popup = popup_content[11]) %>% 
+  addPolygons(data = features[[12]], color = "darkolivegreen", opacity = 1, popup = popup_content[12]) %>% 
+  addPolygons(data = features[[13]], color = "darkred", opacity = 1, popup = popup_content[13]) %>% 
+  addPolygons(data = features[[14]], color = "darkseagreen", opacity = 1, popup = popup_content[14]) %>% 
+  addPolygons(data = features[[15]], color = "cornflowerblue", opacity = 1, popup = popup_content[15]) %>% 
+  addPolygons(data = features[[16]], color = "red", opacity = 1, popup = popup_content[16]) %>% 
+  addPolygons(data = features[[17]], color = "aquamarine", opacity = 1, popup = popup_content[17]) %>% 
+  addPolygons(data = features[[18]], color = "darkslateblue", opacity = 1, popup = popup_content[18]) %>%
+  addPolygons(data = features[[19]], color = "salmon", opacity = 1, popup = popup_content[19]) %>%
+  addPolygons(data = features[[20]], color = "#F37748", opacity = 1, popup = popup_content[20]) %>%
+  addPolygons(data = features[[21]], color = "darkslateblue", opacity = 0.6, popup = popup_content[21]) %>%
+  addPolygons(data = features[[22]], color = "red", opacity = 0.1, popup = popup_content[22]) %>%
+  addScaleBar(position = c("bottomleft")) %>% 
+  setView(-70.3314,48.7047,zoom = 4.2)
+```
+
+```{r, echo=FALSE}
+m
+```
