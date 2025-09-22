@@ -120,6 +120,14 @@ point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/VIMS/zm_observations.
 points[[19]] <- point
 popup_point[19] <- "VIMS"
 
+#GBIF
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/GBIF/gbif_eelgrass_proj.shp") %>% 
+  st_union() %>% 
+  st_concave_hull(allow_holes = TRUE, 0.70)
+
+points[[20]] <- point
+popup_point[20] <- "GBIF"
+
 #Leaflet
 m <- leaflet() %>% 
   addTiles() %>% 
@@ -142,6 +150,7 @@ m <- leaflet() %>%
   addPolygons(data = points[[17]], color = "#F37748", opacity = 1, popup = popup_point[17]) %>% 
   addPolygons(data = points[[18]], color = "purple", opacity = 1, popup = popup_point[18]) %>%
   addPolygons(data = points[[19]], color = "red", opacity = 1, popup = popup_point[19]) %>% 
+  addPolygons(data = points[[20]], color = "grey", opacity = 0.6, popup = popup_point[20]) %>% 
   addPolygons(data = features[[1]], color = "red", opacity = 1, popup = popup_content[1]) %>% 
   addPolygons(data = features[[2]], color = "blue", opacity = 1, popup = popup_content[2]) %>% 
   addPolygons(data = features[[3]], color = "purple", opacity = 1, popup = popup_content[3]) %>% 
