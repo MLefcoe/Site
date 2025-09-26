@@ -128,6 +128,12 @@ point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/GBIF/gbif_eelgrass_pr
 points[[20]] <- point
 popup_point[20] <- "GBIF"
 
+#Wilson & Lotze
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/Phil/wilson_lotze.shp") %>% st_union() %>% st_concave_hull(allow_holes = TRUE, 0.70)
+
+points[[21]] <- point
+popup_point[21] <- "Wilson & Lotze"
+
 #Leaflet
 m <- leaflet() %>% 
   addTiles() %>% 
