@@ -134,6 +134,22 @@ point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/Phil/wilson_lotze.shp
 points[[21]] <- point
 popup_point[21] <- "Wilson & Lotze"
 
+#eelgrass-sites-in-canada
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/Random Sources/eelgrass_sites_in_canada.shp") %>% 
+  st_union() %>% 
+  st_concave_hull(allow_holes = TRUE, 0.70)
+
+points[[22]] <- point
+popup_point[22] <- "eelgrass-sites-in-canada"
+
+#jmchenry
+point <- st_read("C:/Users/user/Documents/Work/Blue Carbon/Random Sources/zoestera_marina_jmchenry.shp") %>% 
+  st_union() %>% 
+  st_concave_hull(allow_holes = TRUE, 0.70)
+
+points[[23]] <- point
+popup_point[23] <- "zostera_marina_jmchenry"
+
 #Leaflet
 m <- leaflet() %>% 
   addTiles() %>% 
@@ -157,6 +173,9 @@ m <- leaflet() %>%
   addPolygons(data = points[[18]], color = "purple", opacity = 1, popup = popup_point[18]) %>%
   addPolygons(data = points[[19]], color = "red", opacity = 1, popup = popup_point[19]) %>% 
   addPolygons(data = points[[20]], color = "grey", opacity = 0.6, popup = popup_point[20]) %>% 
+  addPolygons(data = points[[21]], color = "slateblue", opacity = 0.6, popup = popup_point[21]) %>% 
+  addPolygons(data = points[[22]], color = "orange", opacity = 0.6, popup = popup_point[22]) %>% 
+  addPolygons(data = points[[23]], color = "purple", opacity = 0.6, popup = popup_point[23]) %>% 
   addPolygons(data = features[[1]], color = "red", opacity = 1, popup = popup_content[1]) %>% 
   addPolygons(data = features[[2]], color = "blue", opacity = 1, popup = popup_content[2]) %>% 
   addPolygons(data = features[[3]], color = "purple", opacity = 1, popup = popup_content[3]) %>% 
